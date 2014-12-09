@@ -84,3 +84,23 @@ resource_show() {
 glance_create() {
     glance --os-username admin --os-password admin --os-tenant-name admin --os-auth-url http://localhost:5000/v2.0/ image-create --disk-format=qcow2 --container-format=ovf --location $2 --name $1
 }
+stack_wait_last() {
+    local stack_last=$(stack_last)
+    echo "Waiting for stack $stack_last status to change from CREATE_IN_PROGRESS"
+    while [ 1 ]; do
+        status=$(stack_show $stack_last | awk '$2 == "stack_status" {print $4}')
+        if [[ "$status" != "CREATE_IN_PROGRESS" ]]; then
+            echo "############################################################"
+            echo "#                                                          #"
+            echo "#                                                          #"
+            echo "#                                                          #"
+            echo "#      Stack status is no longer CREATE_IN_PROGRESS!       #"
+            echo "#                                                          #"
+            echo "#                                                          #"
+            echo "#                                                          #"
+            echo "############################################################"
+            break
+        fi
+        sleep 1
+    done
+}
